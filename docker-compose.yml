@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/skydoves
+      - JWT_SECRET=your-secret-key-change-in-production
+    depends_on:
+      - mongodb
+    volumes:
+      - ./uploads:/app/uploads
+
+  mongodb:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=skydoves
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
+
