@@ -2,11 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
+import { JwtService } from '@nestjs/jwt';
 
 describe('Actions E2E', () => {
   let app: INestApplication;
-  const mockJwt =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMSIsImVtYWlsIjoidXNlcjFAbXlhcHAuY29tIiwicm9sZSI6InVzZXIifQ.test';
+  let jwtService: JwtService;
+  let mockJwt: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -14,7 +15,16 @@ describe('Actions E2E', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.setGlobalPrefix('v1');
     await app.init();
+
+    // Generate a valid JWT token for testing
+    jwtService = moduleFixture.get<JwtService>(JwtService);
+    mockJwt = jwtService.sign({
+      sub: 'user1',
+      email: 'user1@myapp.com',
+      role: 'user',
+    });
   });
 
   afterAll(async () => {

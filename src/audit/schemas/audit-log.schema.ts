@@ -5,7 +5,7 @@ export type AuditLogDocument = AuditLog & Document;
 
 @Schema({ timestamps: true })
 export class AuditLog {
-  @Prop({ required: true, index: true })
+  @Prop({ index: true })
   userId?: string;
 
   @Prop({ required: true })
