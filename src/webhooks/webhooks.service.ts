@@ -68,7 +68,7 @@ export class WebhooksService {
             senderId: this.getSenderId(source, imageId, meta),
           });
 
-          taskId = task._id.toString();
+          taskId = String((task as any)._id);
 
           await this.auditService.log({
             userId,

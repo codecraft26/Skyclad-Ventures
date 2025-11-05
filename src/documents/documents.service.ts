@@ -74,8 +74,8 @@ export class DocumentsService {
 
     // Create primary tag association
     await this.documentTagModel.create({
-      documentId: savedDocument._id.toString(),
-      tagId: primaryTagDoc._id.toString(),
+      documentId: String((savedDocument as any)._id),
+      tagId: String((primaryTagDoc as any)._id),
       isPrimary: true,
     });
 
@@ -83,8 +83,8 @@ export class DocumentsService {
     await Promise.all(
       secondaryTagDocs.map((tag) =>
         this.documentTagModel.create({
-          documentId: savedDocument._id.toString(),
-          tagId: tag._id.toString(),
+          documentId: String((savedDocument as any)._id),
+          tagId: String((tag as any)._id),
           isPrimary: false,
         }),
       ),
@@ -116,7 +116,7 @@ export class DocumentsService {
 
     // Find all documents with this tag as primary
     const documentTags = await this.documentTagModel
-      .find({ tagId: tag._id.toString(), isPrimary: true })
+      .find({ tagId: String((tag as any)._id), isPrimary: true })
       .exec();
 
     const documentIds = documentTags.map((dt) => dt.documentId);
