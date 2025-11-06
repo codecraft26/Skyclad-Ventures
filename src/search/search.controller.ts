@@ -17,7 +17,7 @@ export class SearchController {
   @ApiQuery({ name: 'q', description: 'Search query', example: 'invoice' })
   @ApiQuery({ name: 'scope', enum: ['folder', 'files'], required: false, description: 'Search scope - either folder or files' })
   @ApiQuery({ name: 'folder', required: false, description: 'Folder name (required if scope is folder)' })
-  @ApiQuery({ name: 'ids', type: [String], required: false, description: 'Document IDs (required if scope is files)' })
+  @ApiQuery({ name: 'ids', type: String, required: false, description: 'Document IDs (comma-separated string, e.g., "doc1,doc2", required if scope is files)' })
   @ApiResponse({ status: 200, description: 'Search results' })
   @ApiResponse({ status: 400, description: 'Bad request - cannot use both folder scope and ids filter' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })

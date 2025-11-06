@@ -13,9 +13,15 @@ export class ActionsController {
   constructor(private readonly actionsService: ActionsService) {}
 
   @Post('run')
-  @ApiOperation({ summary: 'Run scoped actions on documents (consumes 5 credits per request)' })
+  @ApiOperation({ 
+    summary: 'Run scoped actions on documents (consumes 5 credits per request)',
+    description: 'IMPORTANT: Scope must use either type="folder" with name parameter OR type="files" with ids parameter, NOT both.'
+  })
   @ApiResponse({ status: 200, description: 'Actions executed successfully' })
-  @ApiResponse({ status: 400, description: 'Bad request - invalid scope or missing required fields' })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Bad request - invalid scope configuration. Cannot use both folder name and ids together. Use either type="folder" with name OR type="files" with ids.' 
+  })
   @ApiResponse({ status: 404, description: 'No documents found in scope' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async run(@Body() runActionDto: RunActionDto, @CurrentUser() user: User) {

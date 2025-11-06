@@ -215,5 +215,17 @@ export class WebhooksService {
 
     return this.taskModel.countDocuments(query);
   }
+
+  async getRunningTasks(userId?: string): Promise<TaskDocument[]> {
+    const query: any = {
+      status: 'pending',
+    };
+
+    if (userId) {
+      query.userId = userId;
+    }
+
+    return this.taskModel.find(query).sort({ createdAt: -1 }).exec();
+  }
 }
 

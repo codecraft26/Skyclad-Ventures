@@ -51,10 +51,9 @@ export class DocumentsController {
           description: 'Primary tag for the document (required)',
         },
         secondaryTags: {
-          type: 'array',
-          items: { type: 'string' },
-          example: ['financial', 'important'],
-          description: 'Optional secondary tags',
+          type: 'string',
+          example: 'financial,important',
+          description: 'Optional secondary tags (comma-separated string, e.g., "financial,important")',
         },
       },
       required: ['file', 'primaryTag'],

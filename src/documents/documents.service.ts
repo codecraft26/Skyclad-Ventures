@@ -11,6 +11,7 @@ import { DocumentTag, DocumentTagDocument } from './schemas/document-tag.schema'
 import { TagsService } from '../tags/tags.service';
 import * as fs from 'fs';
 import * as path from 'path';
+const pdfParse = require('pdf-parse');
 
 @Injectable()
 export class DocumentsService {
@@ -59,8 +60,32 @@ export class DocumentsService {
     const filePath = path.join(uploadDir, filename);
     fs.writeFileSync(filePath, file.buffer);
 
-    // Extract text content (simplified - in production, use OCR or text extraction)
-    const textContent = file.buffer.toString('utf-8').substring(0, 10000); // Limit to 10k chars
+    // Extract text content based on file type
+    let textContent = '';
+    try {
+      if (file.mimetype === 'application/pdf' || file.originalname.toLowerCase().endsWith('.pdf')) {
+        // Extract text from PDF
+        const pdfData = await pdfParse(file.buffer);
+        textContent = pdfData.text || '';
+      } else if (file.mimetype.startsWith('text/') || 
+                 file.originalname.toLowerCase().endsWith('.txt') ||
+                 file.originalname.toLowerCase().endsWith('.csv')) {
+        // Extract text from text files
+        textContent = file.buffer.toString('utf-8');
+      } else {
+        // For other file types, try to extract as text (fallback)
+        textContent = file.buffer.toString('utf-8').substring(0, 10000);
+      }
+    } catch (error) {
+      // If text extraction fails, use filename as fallback
+      console.warn(`Failed to extract text from ${file.originalname}:`, error);
+      textContent = `File: ${file.originalname}`;
+    }
+    
+    // Limit text content to reasonable size (100k chars)
+    if (textContent.length > 100000) {
+      textContent = textContent.substring(0, 100000);
+    }
 
     // Create document
     const document = new this.documentModel({
@@ -150,16 +175,41 @@ export class DocumentsService {
     ownerId: string,
     documentIds?: string[],
   ): Promise<DocumentDocument[]> {
-    let searchQuery: any = {
-      $text: { $search: query },
-      ownerId,
-    };
-
+    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+    // Build base query
+    let baseQuery: any = { ownerId };
     if (documentIds && documentIds.length > 0) {
-      searchQuery._id = { $in: documentIds };
+      baseQuery._id = { $in: documentIds };
     }
 
-    return this.documentModel.find(searchQuery).exec();
+    // Try text search first
+    let results: DocumentDocument[] = [];
+    try {
+      const textSearchQuery = {
+        ...baseQuery,
+        $text: { $search: query },
+      };
+      results = await this.documentModel.find(textSearchQuery).exec();
+    } catch (error) {
+      // Text index might not be available, continue to regex search
+    }
+
+    // If text search returned results, use them
+    if (results.length > 0) {
+      return results;
+    }
+
+    // Fallback to regex search (searches in textContent and filename)
+    const regexSearchQuery = {
+      ...baseQuery,
+      $or: [
+        { textContent: { $regex: escapedQuery, $options: 'i' } },
+        { filename: { $regex: escapedQuery, $options: 'i' } },
+      ],
+    };
+
+    return this.documentModel.find(regexSearchQuery).exec();
   }
 }
 

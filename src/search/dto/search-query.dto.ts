@@ -1,4 +1,5 @@
 import { IsString, IsOptional, IsArray, IsIn } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class SearchQueryDto {
@@ -27,9 +28,18 @@ export class SearchQueryDto {
   folder?: string;
 
   @ApiPropertyOptional({
-    description: 'Document IDs array (required if scope is files)',
-    example: ['doc1', 'doc2'],
+    description: 'Document IDs (comma-separated string or array, required if scope is files)',
+    example: 'doc1,doc2',
     type: [String],
+  })
+  @Transform(({ value }) => {
+    if (!value) return undefined;
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') {
+      // Handle comma-separated string
+      return value.split(',').map((id: string) => id.trim()).filter((id: string) => id.length > 0);
+    }
+    return [value];
   })
   @IsOptional()
   @IsArray()
