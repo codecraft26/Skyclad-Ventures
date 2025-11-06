@@ -101,7 +101,7 @@ export class ActionsService {
         );
         executedActions.push({
           action: 'make_document',
-          documentId: generatedDoc._id.toString(),
+          documentId: String((generatedDoc as any)._id),
         });
       } else if (result.action === 'make_csv') {
         // Generate CSV file
@@ -119,7 +119,7 @@ export class ActionsService {
         );
         executedActions.push({
           action: 'make_csv',
-          documentId: generatedDoc._id.toString(),
+          documentId: String((generatedDoc as any)._id),
         });
       }
     }

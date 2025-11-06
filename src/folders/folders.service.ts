@@ -26,12 +26,12 @@ export class FoldersService {
     const folders = await Promise.all(
       tags.map(async (tag) => {
         const count = await this.documentTagModel.countDocuments({
-          tagId: tag._id.toString(),
+          tagId: String((tag as any)._id),
           isPrimary: true,
         });
         return {
           name: tag.name,
-          tagId: tag._id.toString(),
+          tagId: String((tag as any)._id),
           documentCount: count,
         };
       }),
@@ -53,7 +53,7 @@ export class FoldersService {
 
     // Find all documents with this tag as primary
     const documentTags = await this.documentTagModel
-      .find({ tagId: tag._id.toString(), isPrimary: true })
+      .find({ tagId: String((tag as any)._id), isPrimary: true })
       .exec();
 
     return documentTags.map((dt) => dt.documentId);

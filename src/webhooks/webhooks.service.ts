@@ -68,7 +68,7 @@ export class WebhooksService {
             senderId: this.getSenderId(source, imageId, meta),
           });
 
-          taskId = task._id.toString();
+          taskId = String((task as any)._id);
 
           await this.auditService.log({
             userId,
@@ -214,6 +214,18 @@ export class WebhooksService {
     }
 
     return this.taskModel.countDocuments(query);
+  }
+
+  async getRunningTasks(userId?: string): Promise<TaskDocument[]> {
+    const query: any = {
+      status: 'pending',
+    };
+
+    if (userId) {
+      query.userId = userId;
+    }
+
+    return this.taskModel.find(query).sort({ createdAt: -1 }).exec();
   }
 }
 

@@ -19,6 +19,13 @@ export class SearchService {
     ids?: string[],
   ) {
     // Validate scope rule: either folder OR files, not both
+    // Check if both folder and ids are provided (even without explicit scope)
+    if (folderName && ids && ids.length > 0) {
+      throw new BadRequestException(
+        'Cannot use both folder and ids filter together. Use either scope=folder with folder parameter OR scope=files with ids parameter.',
+      );
+    }
+    
     if (scope === 'folder' && ids && ids.length > 0) {
       throw new BadRequestException(
         'Cannot use both folder scope and ids filter',
@@ -45,6 +52,12 @@ export class SearchService {
         throw new BadRequestException('Document IDs are required for files scope');
       }
       documentIds = ids;
+    } else if (folderName) {
+      // If folder is provided without scope, treat it as folder scope
+      documentIds = await this.foldersService.getDocumentsByFolder(
+        folderName,
+        ownerId,
+      );
     } else if (ids && ids.length > 0) {
       documentIds = ids;
     }
